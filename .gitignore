@@ -1,0 +1,21 @@
+# Confidential operational data
+/data/input/
+/data/output/
+/output/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Local configuration
+.env
+.env.*
+
+# Temporary files
+*.log
+*.tmp
