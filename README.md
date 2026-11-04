@@ -1,164 +1,408 @@
 
-## Run the Analysis in Google Colab
+# Rental Revenue Decision Support
 
-Launch the Revenue Management Decision Support notebook directly from GitHub.
+**A Python-based, auditable Revenue Management analytics framework for short-term rental properties.**
 
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/carlosjostemperor/rental-revenue-decision-support/blob/main/Revenue_Management_EDA.ipynb)
+[![Open in Google Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/carlosjostemperor/rental-revenue-decision-support/blob/main/Revenue_Management_EDA.ipynb)
 
-The notebook provides a reusable analytical workflow for evaluating pricing, occupancy, revenue, booking pace, and competitive positioning across short-term rental properties.
+## Overview
 
+Rental Revenue Decision Support is a reusable analytical framework designed to support evidence-based pricing and revenue decisions for short-term rental properties.
 
-# Revenue Management Analytics
+Built with Python and Google Colab, the system combines PriceLabs booking reports, market benchmarks, and competitor pricing data into a structured and auditable analysis.
 
-**Release 2.1.0** — A tested, auditable pricing-position analysis for one short-term rental property, built on four PriceLabs exports. It complements PriceLabs: it does not set prices, connect to PriceLabs, or change anything in any system.
+The project is designed to **complement PriceLabs, not replace it**.
 
-**What it answers**
+Its purpose is to help Revenue Managers investigate property performance, identify potential pricing opportunities, evaluate booking behavior, and document the evidence supporting their recommendations.
 
-- Where does the property's advertised rate sit against a hand-picked comp set, date by date, on the dates it is still available? (mean, median, P25, P75, standard deviation, sample count, confidence interval)
-- How fast is it booking (pace, lead time, length of stay, booking ADR) in a given **Booked Date** window?
-- How do ADR, occupancy and **RevPAR** compare with the PriceLabs market benchmark, historically and forward?
-- Are the four exports consistent with each other? (reservations reconciled with Report Builder by stay date)
+The same analytical workflow can be reused across different properties.
 
-**What it does not answer**
+## Key Business Questions
 
-- It does not estimate price elasticity or the revenue-maximizing rate.
-- It does not prove that price caused bookings.
-- It does not observe competitors' realized occupancy; competitor unavailability is not a sale.
+The framework helps answer:
 
-See [docs/METHODOLOGY.md](docs/METHODOLOGY.md) for formulas and limitations.
+1. How is a property priced compared with the market and similar homes?
+2. How do ADR, occupancy, and RevPAR compare with market benchmarks?
+3. Is booking activity unusually strong or weak?
+4. What do booking lead time and length of stay reveal?
+5. How do minimum-stay requirements affect price comparisons?
+6. Are there indications of potential underpricing or overpricing?
+7. What evidence supports a pricing recommendation?
+8. Can the results be reproduced and independently audited?
+
+The framework does not automatically change prices or calculate a guaranteed optimal nightly rate.
 
 ---
 
-## Quick start in Google Colab
+## Quick Start — Google Colab
 
-1. Download the project ZIP (or clone the project repository into Colab). The public repository must contain code and synthetic examples only.
-2. Open `Revenue_Management_EDA.ipynb` in Colab and run the first cell. If the project is not present, it asks for the ZIP and extracts it safely.
-3. To try the tool without real data, uncomment the line in section 1 that creates `data/example_synthetic`, and set `DATA_DIR = 'data/example_synthetic'` and `property_name='SYNTHETIC 6BR Pool Home'`.
-4. For a real property:
-   - put the four exports in `data/input/` with the exact names below;
-   - set `property_name` and the date windows in section 1.
-5. Choose **Runtime → Run all**.
-   - A structural problem stops the run with a clear message, for example an unparseable value, an unknown booking status, an ambiguous listing name or a missing calendar date. Fix the input; do not bypass the check.
-6. Check the displayed **decision status** and every non-PASS item. Set the attestations (`attest_*`) and your name only after verifying them, then rerun. An unresolved WARN produces `REVIEW_REQUIRED`, not `VALIDATED`.
-7. Download the folder `output/<run_id>/` before the Colab session ends, including `REVIEW_SUMMARY.md` and `run_manifest.json`. Do not use a `FAILED` or `REVIEW_REQUIRED` run as a validated pricing recommendation.
+**No project ZIP download or installation is required.**
 
-Colab already includes pandas, numpy and matplotlib. No installation step is required.
+### Step 1 — Open the notebook
 
-### Local use
+Click the button below:
 
-```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt            # runtime
-pip install -r requirements-dev.txt        # tests + local Jupyter
-python -m pytest                           # run the test suite
+[![Open in Google Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/carlosjostemperor/rental-revenue-decision-support/blob/main/Revenue_Management_EDA.ipynb)
+
+The notebook opens directly from this repository.
+
+### Step 2 — Connect GitHub to Colab
+
+Run:
+
+`0 | Connect GitHub and Colab (automatic)`
+
+The notebook automatically:
+
+- Clones the public GitHub repository into the Colab runtime.
+- Loads the `rm_analytics` Python package.
+- Checks the current GitHub code revision.
+- Refreshes the code when the setup cell is run again.
+
+There is no need to upload the project source code.
+
+**Important:** This is a one-way GitHub-to-Colab code synchronization. The notebook does not automatically upload data, results, or code changes to GitHub.
+
+### Step 3 — Select your data source
+
+Two modes are available.
+
+#### Option A — Demonstration with synthetic data
+
+To explore the system without real company data:
+
+Skip section `0B`.
+
+In section `1 | Configure this run`, set:
+
+~~~python
+DATA_DIR = 'data/example_synthetic'
+~~~
+
+Inside `AnalysisConfig`, set:
+
+~~~python
+property_name='SYNTHETIC 6BR Pool Home',
+~~~
+
+Keep the example analysis dates and run the remaining notebook sections.
+
+The example dataset is already included in the repository.
+
+No CSV upload is required for this demonstration.
+
+#### Option B — Analyze a real property
+
+In section `0B | Upload the four PriceLabs CSVs`, set:
+
+~~~python
+UPLOAD_CSVS = True
+~~~
+
+Run the section and upload the four PriceLabs exports when prompted.
+
+The notebook places the uploaded files in the Colab runtime.
+
+In section `1 | Configure this run`, set:
+
+~~~python
+DATA_DIR = 'data/input'
+~~~
+
+Then configure the exact property name and the appropriate analysis windows.
+
+For a new property, use its own data and dates. Do not reuse the synthetic listing name or assume that the previous property's dates are suitable.
+
+### Step 4 — Execute the analysis
+
+Run the notebook sections in order:
+
+| Section | Purpose |
+|---|---|
+| 0 | GitHub connection and Python setup |
+| 0B | Optional CSV upload |
+| 1 | Property and date configuration |
+| 2 | Load, validate, compute and audit |
+| 3 | Executive metrics |
+| 4 | ADR, occupancy and RevPAR benchmarks |
+| 5 | Daily competitor pricing analysis |
+| 6 | Statistical charts |
+| 7 | Export evidence |
+
+### Step 5 — Review the results
+
+Examine the executive metrics, market comparisons, daily competitor positioning and audit findings.
+
+Review every warning before using the results to support a pricing decision.
+
+### Step 6 — Export and preserve the evidence
+
+Run section `7 | Export evidence`.
+
+The framework creates a dated output folder containing:
+
+- Analytical tables.
+- Competitor pricing comparisons.
+- Statistical charts.
+- Booking performance metrics.
+- Revenue reconciliation.
+- Audit findings.
+- Execution metadata and file hashes.
+
+Download the evidence before closing the Colab session. Colab runtime storage is temporary.
+
+---
+
+## Required Data
+
+A real analysis requires four PriceLabs CSV exports.
+
+| File | Source | Purpose |
+|---|---|---|
+| `bookings.csv` | PriceLabs Bookings Report | Booking pace, revenue, ADR, lead time and length of stay |
+| `competitor_calendar.csv` | PriceLabs Competitor Calendar | Competitor prices, availability and minimum-stay requirements |
+| `report_builder_historical.csv` | PriceLabs Report Builder | Historical ADR, occupancy, revenue and market comparison |
+| `report_builder_forward.csv` | PriceLabs Report Builder | Forward ADR, occupancy, revenue and market comparison |
+
+The booking report should include all relevant reservations needed for stay-date reconciliation, not only reservations created inside the selected booking window.
+
+The Report Builder exports must match the historical and forward stay-date periods configured in the notebook.
+
+Consult [DATA_CHECKLIST.md](DATA_CHECKLIST.md) for detailed export requirements.
+
+---
+
+## Analytical Capabilities
+
+### 1. Competitive Pricing Analysis
+
+The framework compares advertised nightly prices against a manually selected group of comparable properties.
+
+Metrics include:
+
+- Mean competitor price.
+- Median competitor price (P50).
+- P25 and P75 price levels.
+- Standard deviation.
+- Daily percentage price gaps.
+- Weekday and weekend comparisons.
+- Minimum available competitor counts.
+- Minimum-stay sensitivity.
+- Availability-based sensitivity analysis.
+- Weekly block-bootstrap confidence intervals.
+
+Dates without sufficient comparable pricing data are flagged or excluded from the primary comparison.
+
+### 2. Revenue Performance
+
+The framework analyzes:
+
+- Average Daily Rate (ADR).
+- Occupancy.
+- Revenue per Available Room (RevPAR), or the corresponding property-level benchmark.
+- Rental revenue.
+- Booking pace.
+- Booking pickup where available.
+- Booking lead time.
+- Length of stay.
+- Historical and forward market benchmarks.
+
+Metrics are calculated within clearly defined booking-creation or stay-date periods.
+
+### 3. Data Validation and Reconciliation
+
+The system includes:
+
+- Input-schema validation.
+- Strict monetary and date parsing.
+- Property identification checks.
+- Booking-status validation.
+- Booking-to-Report Builder reconciliation.
+- Possible duplicate competitor detection.
+- Minimum-stay comparisons.
+- Documented data-quality warnings.
+
+Invalid or inconsistent inputs may stop the analysis rather than silently produce misleading figures.
+
+### 4. Auditable Evidence
+
+Each execution generates its own output directory.
+
+The system records:
+
+- Analysis configuration.
+- Data-quality results.
+- Source-file SHA-256 hashes.
+- Output-file hashes.
+- Code revision information where available.
+- Software environment metadata.
+
+This provides traceability for future review.
+
+---
+
+## Understanding Audit Status
+
+Every execution receives a decision-review status.
+
+| Status | Meaning | Required action |
+|---|---|---|
+| `VALIDATED` | All required checks and attestations passed | Review findings and make a separate pricing decision |
+| `REVIEW_REQUIRED` | One or more warnings remain | Investigate and document each material warning |
+| `FAILED` | One or more critical checks failed | Do not use the results for pricing decisions |
+
+**Operational rule:**
+
+A `FAILED` analysis must not support pricing decisions.
+
+An analysis marked `REVIEW_REQUIRED` may inform a supervised decision only after each relevant warning has been reviewed, its impact understood, and any remaining limitations explicitly documented.
+
+Human acceptance of a warning does not automatically change the system status to `VALIDATED`.
+
+Warnings related to competitor comparability do not necessarily indicate incorrect calculations. They may identify limitations that require Revenue Management judgment.
+
+---
+
+## Interpreting Results Responsibly
+
+The framework is designed for decision support, not automatic price optimization.
+
+Important limitations include:
+
+- Lower prices than competitors do not prove economic underpricing.
+- Higher occupancy does not prove that lower prices caused additional bookings.
+- Competitor advertised rates are not realized competitor ADR.
+- Unavailable competitor dates do not necessarily represent confirmed bookings.
+- Differences in property size, quality, reviews, amenities and stay requirements can affect comparability.
+- Historical and forward performance should not be compared without considering their different date windows and demand conditions.
+
+The system does not estimate price elasticity or guarantee revenue-maximizing rates.
+
+Pricing recommendations should distinguish:
+
+**Observation:** What the data directly show.
+
+**Hypothesis:** What may explain the observed performance.
+
+**Proposed action:** A pricing adjustment or test supported by the available evidence.
+
+**Monitoring:** How the impact of the decision will be evaluated.
+
+---
+
+## Recommended Revenue Management Workflow
+
+1. Identify a specific property-performance question.
+2. Select appropriate comparable properties.
+3. Export the four PriceLabs reports.
+4. Configure the property and analysis periods.
+5. Execute the notebook.
+6. Review metrics, comparisons and audit warnings.
+7. Investigate any material inconsistencies.
+8. Document findings and recommendations.
+9. Define any proposed pricing change as a controlled test.
+10. Monitor booking pickup, ADR, occupancy and RevPAR after implementation.
+
+**The objective is better decisions, not more analysis for its own sake.**
+
+A pricing adjustment should only be implemented after the appropriate business approval.
+
+---
+
+## Project Structure
+
+~~~text
+rental-revenue-decision-support/
+├── README.md
+├── Revenue_Management_EDA.ipynb
+├── DATA_CHECKLIST.md
+├── requirements.txt
+├── requirements-dev.txt
+├── pyproject.toml
+├── CHANGELOG.md
+├── rm_analytics/
+│   ├── config.py
+│   ├── parsing.py
+│   ├── loaders.py
+│   ├── metrics.py
+│   ├── duplicates.py
+│   ├── audit.py
+│   ├── pipeline.py
+│   ├── export.py
+│   ├── charts.py
+│   └── synthetic.py
+├── tests/
+├── docs/
+└── data/
+    └── example_synthetic/
+~~~
+
+The analytical calculations reside in the `rm_analytics` package.
+
+The Jupyter notebook provides the configuration, execution, visualization and export interface.
+
+This separation supports maintainability and reuse without requiring a new notebook for each property.
+
+---
+
+## Local Development and Testing
+
+The recommended interface is Google Colab.
+
+For developers who prefer running the project locally:
+
+~~~bash
+python -m pip install -r requirements.txt
+python -m pip install -r requirements-dev.txt
+python -m pytest
 jupyter notebook Revenue_Management_EDA.ipynb
-```
+~~~
+
+The repository includes a synthetic test dataset and an automated test suite.
+
+Test coverage does not eliminate the need to review real PriceLabs exports, business assumptions and competitor selection.
 
 ---
 
-## Input contract (four files in `data/input/`)
+## Data Confidentiality
 
-| File | PriceLabs export | Required columns |
-|---|---|---|
-| `competitor_calendar.csv` | Competitor Calendar | 3 header rows: listing names, then `prices`, `available`, `min_stay` per listing, then `Date`. Must cover every date of the forward window with no gaps. |
-| `bookings.csv` | Bookings Report | `Listing Name`, `Booked Date`, `Check-in Date`, `Check-out Date`, `Rental Revenue`, `Length of Stay (Days)`. Recommended: `Booking Status`, `Booking Window (Days)`, `Reservation ID`. **Export all bookings of the property**, not filtered by booked date, so stay-date reconciliation works. |
-| `report_builder_historical.csv` | Report Builder, historical **Stay Date Range** | `Listing Name`, `Rental ADR`, `Market ADR`, `Adjusted Occupancy %`, `Market Occupancy %`. Recommended: `Rental Revenue`, `Booked Nights`, `Number of Bookings`, `Rental RevPAR`, pickups, `Average Booking Window`, `Average LOS`. |
-| `report_builder_forward.csv` | Report Builder, forward **Stay Date Range** | Same as above. |
+The public repository is intended for source code, technical documentation, automated tests and synthetic examples.
 
-**Accepted formats**
+Operational booking exports and property-level financial evidence should be stored according to the company's approved data-handling procedures.
 
-- Money: `1234.5`, `$1,234.50`, `(45.00)`. European `1.234,50` is rejected.
-- Percent: `65%` or `65`.
-- Dates: ISO with or without time, or numeric day/month orders, detected automatically.
-  - Day-first vs month-first is resolved automatically in the calendar.
-  - In the bookings report, an ambiguous date stops the run and asks you to set `bookings_date_format`.
+The Colab runtime does not automatically publish uploaded CSVs or generated outputs to GitHub.
 
-## Configuration (notebook section 1)
+Do not commit confidential reports, real reservation data or sensitive notebook outputs without appropriate authorization.
 
-| Setting | Meaning |
-|---|---|
-| `property_name` | Exact listing name. An exact match wins; a partial match must be unique in every file. |
-| `booking_start`, `booking_end` | **Booked Date** (creation) window, inclusive. Bookings made at any time on the last day are included. |
-| `historical_stay_start/end`, `forward_start/end` | The Stay Date Ranges selected in Report Builder. They are cross-checked against the bookings file. |
-| `min_active_comps` (default 5) | Minimum number of available comps for a date to be compared. |
-| `valid_booking_statuses`, `excluded_booking_statuses` | Status whitelist. Any other status value stops the run. |
-| `duplicate_policy` | `warn` (default) flags suspected duplicate listings; `drop` removes only strong price-and-availability matches. Similar blocked-day calendars alone are a review flag, **never** a reason for automatic removal. |
-| `exclude_comps` | Comp names removed after review. |
-| `attest_*`, `analyst`, `reviewer` | Human verifications recorded in the manifest. |
+The `.gitignore` file helps prevent accidental inclusion of operational files, but it does not remove information previously committed to Git history.
 
-## Outputs (`output/<run_id>/`)
-
-**Tables**
-
-| File | Content |
-|---|---|
-| `daily_positions.csv` | Every forward date: our price and availability, comp statistics, gap, band, minimum-stay flags and exclusion reason |
-| `minimum_stay_sensitivity.csv` | Separate rate-gap summaries for dates with matched, different or unknown minimum stays |
-| `summary_metrics.csv` | Executive metrics |
-| `market_comparison.csv` | ADR, occupancy and RevPAR versus the market |
-| `reconciliation.csv` | Bookings versus Report Builder |
-| `duplicate_listings.csv` | Probable duplicate homes |
-| `band_by_day_group.csv` | Price bands by weekday group |
-| `booking_window_reservations.csv` | Reservations in the booking window, without guest or listing identifiers |
-| `audit_checks.csv` | All PASS / WARN / FAIL checks |
-
-**Other files**
-
-- `position_summary.json` and `booking_summary.json`
-- `REVIEW_SUMMARY.md` — outstanding checks and required reviewer actions
-- Four PNG charts
-- `run_manifest.json`, which records:
-  - status and decision-use label;
-  - SHA-256 of every input and output;
-  - full configuration;
-  - code version (package hash and git commit when available);
-  - Python and library versions.
-
-Each run gets a new folder; earlier evidence is never overwritten. The audit status is an explicit governance gate:
-
-| Status | Meaning | Folder suffix |
-|---|---|---|
-| `VALIDATED` | All machine checks **and required attestations** passed; a separate human pricing decision is still mandatory. | No suffix |
-| `REVIEW_REQUIRED` | At least one WARN. The run is useful for investigation but **not validated** for pricing decisions until the issue is reviewed and resolved. | `_REVIEW_REQUIRED` |
-| `FAILED` | At least one FAIL. Results must **not** support pricing decisions. | `_FAILED` |
-
-The manifest contains the unresolved review items, and `REVIEW_SUMMARY.md` lists them in readable form. Each output other than the self-referential manifest has a SHA-256 recorded in the manifest. Human acceptance of a remaining warning must be documented; it does not silently transform the exported run into `VALIDATED`.
-
-## Project structure
-
-```text
-revenue-management-analytics/
-  Revenue_Management_EDA.ipynb   # thin Colab/Jupyter front end (no calculations)
-  rm_analytics/                  # tested package
-    config.py      parsing.py    loaders.py   duplicates.py
-    metrics.py     audit.py      pipeline.py  export.py
-    charts.py      synthetic.py
-  tests/                         # pytest suite (synthetic data only)
-  data/input/                    # real exports go here (git-ignored)
-  data/example_synthetic/        # generated example data, no real information
-  docs/                          # methodology, fix report, test results, migration guide
-```
-
-## Monthly operating procedure
-
-1. **Define** the property, windows, comp set and analyst.
-2. **Export** the four files with identical property filters. Screenshot the Report Builder date ranges.
-3. **Run** the notebook top to bottom.
-4. **Review** every WARN, inspect `minimum_stay_sensitivity.csv`, review flagged duplicate homes, spot-check five dates in the PriceLabs UI, and set the attestations after independent verification. Re-run to update the status. If any warning remains, document its limits and retain `REVIEW_REQUIRED`.
-5. **Interpret** using the conclusion framework at the end of the notebook. Keep observations, hypotheses and decisions separate.
-6. **Approve** any rate change as a pricing test (hypothesis, dates, magnitude, monitoring metric, rollback rule) in a separate decision.
-7. **Archive** the run folder and the source files in approved restricted storage.
-
-## Data policy
-
-The **distributed project ZIP** contains no real booking, competitor or financial data. The project is suitable for hosting publicly **only with synthetic examples and approved documentation**. `data/input/` and `output/` are git-ignored. Never commit operational CSVs, run outputs, screenshots or nonapproved business reports. The test suite checks for certain known confidential identifiers and saved notebook outputs, but cannot identify all sensitive content. Historical Git commits are not erased by new `.gitignore` rules; confirm that any existing exposure is authorized by the data owner.
+---
 
 ## Documentation
 
-- [docs/METHODOLOGY.md](docs/METHODOLOGY.md): formulas, statistical choices, limitations
-- [docs/FIX_REPORT.md](docs/FIX_REPORT.md): audit findings and how each was addressed
-- [docs/TEST_RESULTS.md](docs/TEST_RESULTS.md): v2 synthetic test record
-- [docs/V2_1_VALIDATION.md](docs/V2_1_VALIDATION.md): v2.1 enhancements, independent testing and remaining review items
-- [docs/MIGRATION_GUIDE.md](docs/MIGRATION_GUIDE.md): replacing the previous version on GitHub
-- [DATA_CHECKLIST.md](DATA_CHECKLIST.md): per-run checklist
-- [CHANGELOG.md](CHANGELOG.md)
+- [Data Checklist](DATA_CHECKLIST.md) — Required exports and preparation.
+- [Methodology](docs/METHODOLOGY.md) — Formulas, statistical methods and limitations.
+- [Colab Integration Guide](docs/COLAB_GITHUB_GUIDE.md) — Google Colab setup and troubleshooting.
+- [Validation Notes](docs/V2_1_VALIDATION.md) — Validation history and known limitations.
+- [Test Results](docs/TEST_RESULTS.md) — Automated test information.
+- [Changelog](CHANGELOG.md) — Project development history.
+
+---
+
+## Project Status
+
+**Version:** 2.1.0
+
+**Status:** Operational pilot — supervised analytical use.
+
+The core workflow has been exercised using synthetic data, including GitHub-to-Colab synchronization, calculations, reconciliation, charts and evidence export.
+
+Real-property findings require current, valid input files and review of the audit results.
+
+The project is ready for practical Revenue Management investigations, subject to data-quality checks and human judgment.
+
+## Final Principle
+
+**Analyze with evidence. Recommend with discipline. Measure the outcome.**
+
+Rental Revenue Decision Support is designed to make property-level pricing investigations consistent, reproducible and actionable.
