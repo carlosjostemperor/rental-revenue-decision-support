@@ -1,3 +1,13 @@
+
+## Run the Analysis in Google Colab
+
+Launch the Revenue Management Decision Support notebook directly from GitHub.
+
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/carlosjostemperor/rental-revenue-decision-support/blob/main/Revenue_Management_EDA.ipynb)
+
+The notebook provides a reusable analytical workflow for evaluating pricing, occupancy, revenue, booking pace, and competitive positioning across short-term rental properties.
+
+
 # Revenue Management Analytics
 
 **Release 2.1.0** — A tested, auditable pricing-position analysis for one short-term rental property, built on four PriceLabs exports. It complements PriceLabs: it does not set prices, connect to PriceLabs, or change anything in any system.
