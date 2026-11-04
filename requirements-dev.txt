@@ -1,0 +1,7 @@
+-r requirements.txt
+pytest>=8.0
+# Notebook execution test and local Jupyter
+nbclient>=0.10
+nbformat>=5.10
+ipykernel>=6.29
+notebook>=7.0

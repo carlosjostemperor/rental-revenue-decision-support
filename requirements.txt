@@ -1,0 +1,5 @@
+# Runtime dependencies (Google Colab already provides these).
+# Tested with pandas 2.2.3 / numpy 2.2.6 / matplotlib 3.10.9 and pandas 3.0.5 / numpy 2.5.3 / matplotlib 3.11.2 on Python 3.13.
+pandas>=2.2,<4.0
+numpy>=1.26,<3.0
+matplotlib>=3.8,<4.0
